@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- BEGIN CABEÇALHO PROJETO -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>tech.ada.web2.quarkus</groupId>
     <artifactId>rest-quarkus-api</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-
+<!-- END CABEÇALHO PROJETO -->
+<!-- BEGIN VARIAVEIS REUTILIZAVEIS -->
     <properties>
         <compiler-plugin.version>3.14.0</compiler-plugin.version>
-        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
@@ -16,11 +18,14 @@
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
     </properties>
+<!-- END VARIAVEIS REUTILIZAVEIS -->
 
+<!-- start: import quarkus-bom, será usado para definir as versoes compativeis de tudo que é quarkus.io -->
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>${quarkus.platform.group-id}</groupId>
+                <!-- garante todas as dependencias do QUARKUS usem versoes compativeis com 3.28.1: quarkus-bom -->
                 <artifactId>${quarkus.platform.artifact-id}</artifactId>
                 <version>${quarkus.platform.version}</version>
                 <type>pom</type>
@@ -28,35 +33,60 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+<!-- end: import quarkus-bom -->
 
+<!-- start: project dependencies, add library to project path -->
     <dependencies>
         <dependency>
-            <groupId>io.quarkus</groupId>
+            <groupId>io.quarkus</groupId> <!-- serializacao/deserializacao -->
             <artifactId>quarkus-rest-jackson</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.quarkus</groupId>
+            <groupId>io.quarkus</groupId> <!-- CDI - injecao de dependencias -->
             <artifactId>quarkus-arc</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.quarkus</groupId>
+            <groupId>io.quarkus</groupId> <!-- implementacao do JAX-RS especificacao, disponibilizacao de uma API -->
             <artifactId>quarkus-rest</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.quarkus</groupId>
+            <groupId>io.quarkus</groupId> <!-- teste unitario -->
             <artifactId>quarkus-junit5</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.rest-assured</groupId>
+            <groupId>io.rest-assured</groupId> <!-- testes de integração -->
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
-    </dependencies>
 
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.38</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- MapStruct -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.5.5.Final</version>
+        </dependency>
+
+        <!-- MapStruct Processor -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>1.5.5.Final</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+<!-- end: project dependencies, add library to project path -->
     <build>
         <plugins>
-            <plugin>
+            <plugin><!-- compilar, empacotar, gerar codigo, gerar build nativo(app nativo windows/linux/macos) -->
                 <groupId>${quarkus.platform.group-id}</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
                 <version>${quarkus.platform.version}</version>
@@ -72,14 +102,27 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
+            <plugin><!-- compila codigo com uma configuracoes especificas -->
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler-plugin.version}</version>
                 <configuration>
                     <parameters>true</parameters>
+                    <!-- adiciona ao compilador os procesadores de anotacoes que conseguem gerar codigo atraves de anotacoes(Lombok e MapStruct) -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.38</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>1.5.5.Final</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            <plugin>
+            <plugin><!-- teste unitario -->
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire-plugin.version}</version>
                 <configuration>
@@ -89,7 +132,7 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-            <plugin>
+            <plugin><!-- testes de integracao -->
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire-plugin.version}</version>
                 <executions>
