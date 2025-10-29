@@ -1,0 +1,103 @@
+Introduçao ao Quarkus
+
+#why quarkus?
+Obejtivo migrar moliticos e legados sistemas Java para o mundo dos containers, kubernetes, cloud, serveless.
+
+https://quarkus.io/about/
+
+
+#Supersonico e Subatomico
+
+#Speed: response time - tempo de responsta de um request = request/tempo(ms)
+Simple aplication rest without database:
+- tradicional framework: 4.3s
+- quarkus + hotspost(JIT): 0.75
+- quarkus + graalVM: 0.014s 
+
+#Size: footprint(pegada) - memoria gasta por uma aplicacao(codigo e execucao)
+Simple aplication rest without database:
+- tradicional framework: 140MB
+- quarkus + hotspost(JIT): 77MB
+- quarkus + graalVM: 19MB
+
+
+#principal proposito quarkus -> empurrar java para cloud
+
+Cenario antes do cloud
+- java nasceu em 95
+- gui applications(aws swing...)
+- single core e multi-threads
+- monolitic application -> todas as funcionalidades da aplicacao em um unico artefato a rodar em um unico core(servidor) mais com muitas threads
+- Executava em uma enorme maquina(s) que funcionava 24/7, iniciava aplicacao em minutos em 01 janeiro e deixava o ano inteiro a rodar, 
+shuntdown apenas para manutencao.(alto custo, consome muita memoria, uma maquina a trabalhar o ano todo, tempo de arranque MINUTOS, downtime para manuntencao)
+- Enorme consumo de memoria pela JVM -> guarbage collector
+- escala vertical -> uma maquina com mais memoria e mais core
+
+Cenario com cloud
+ - pequenas maquinas
+ - multicore e single threads -> gerenciar muitas threads tem um grande impacto em preformance
+ - deploy milhares de microservices -> inves de um big monolitic
+ - stop and start rapidamnete
+ - escala horizontal -> mais intancias criadas em um node -> se uma intancia falha, mata a intancia move os request para outra instancia
+ 
+Densidade de java applications
+ - muitas JVM em unico node(server), mas como JVM é pesada temos menos aplicacoes/JVM em um serve se comparado a aplicacoes feitas em GO ou nodejs 
+ as quais podem ser colocadas em maior numero em um server por serem menores. QUARKUS VEIO AJUDAR NISSO
+ 
+#QUARKUS  e versao jdk
+Quarkus 3.8
+Versão mínima do Java: Java 17
+Versão recomendada: Java 21
+Versão do Quarkus: 3.8.x (última versão LTS)
+
+Java 11: Não é mais suportado a partir do Quarkus 3.7; 
+no entanto, se você ainda utiliza Java 11, pode continuar utilizando o Quarkus 3.6 LTS, que receberá atualizações e correções por mais tempo. 
+ 
+ 
+ 
+#Relacao core, threads e aplicacoes
+- Single-core + Multithread → Monólitos tradicionais em servidores antigos.
+
+- Multi-core + Multithread → Monólitos modernos(EC2) ou microserviços otimizados (bom aproveitamento de hardware).
+
+- Multi-core + Single-thread → Microserviços leves que escalam horizontalmente (ex: Node.js).
+
+
+#installing environment
+- open jdk 25 - https://jdk.java.net/25/
+- grallvm 25 - https://www.graalvm.org/downloads/
+- intellij - https://www.jetbrains.com/idea/download/?section=windows
+- maven - https://maven.apache.org/download.cgi / https://maven.apache.org/install.html
+- docker desktop - https://www.docker.com/get-started/
+
+
+
+#creating bootstrap quarkus project
+
+1- Via mvn plugin
+
+#quarkus version < 3 -> -Dextensions='resteasy-jsonb' (LEGADO) -> 
+mvn -U io.quarkus:quarkus-maven-plugin:create -DprojectGroupId='tech.ada.web2.quarkus' -DprojectArtifactId='rest-quarkus-api' -DclassName='tech.ada.web2.quarkus.Bancos' -Dpath='/v1/bancos' -Dextensions='resteasy-jsonb'
+
+#quarkus version >= 3 -> -Dextensions='resteasy-reactive-jackson' -> usa jackson para serializa e deserealizar objetos, alem de ser reativo, ou seja enquanto processa um request pode processa mais request que chegam -> projetos que usar spring ou mapstruct ou openfeign		
+mvn io.quarkus.platform:quarkus-maven-plugin:3.15.2:create -DprojectGroupId='tech.ada.web2.quarkus' -DprojectArtifactId='rest-quarkus-api' -DclassName='tech.ada.web2.quarkus.Bancos' -Dpath='/v1/bancos' -Dextensions='resteasy-reactive-jackson'
+
+#quarkus version >= 3 -> -Dextensions='resteasy-reactive-jsonb' -> usa json B para serializa e deserealizar objetos -> projetos com apenas jakarta especificacoes		
+mvn io.quarkus.platform:quarkus-maven-plugin:3.15.2:create -DprojectGroupId='tech.ada.web2.quarkus' -DprojectArtifactId='rest-quarkus-api' -DclassName='tech.ada.web2.quarkus.Bancos' -Dpath='/v1/bancos' -Dextensions='resteasy-reactive-jsonb'
+
+Quarkus 3 reativo(nao bloqueante) X Quarkus 2 nao reativo(bloqueante):
+- nao reativo, ou seja recebe um request e cria uma thread, enquanto nao termina de processar a thread fica ocupada e os outro 
+request precisam pegar uma thread no pool de threads do servidor ou aguardar em fila a thread bloqueada ser liberada
+- reativo, recebe o request e cria uma thread se o request demora a ser processado o quarkus nao bloqueia a thread devolve ela ao pool de threads e pode ser usada por outro request
+que chegam, quando o request que estava sendo processado termina ele recupera a thread do pool e devolve a resposta.
+ 
+
+
+#Start quarkus project
+1- cd rest-quarkus-api
+2- ./mvnw quarkus:dev (dev mode)
+3- ./mvnw test (test mode)
+
+#Gerar jar
+./mvnw clean package -Dquarkus.package.jar.type=uber-jar
+java -jar target/my-project-1.0.0-runner.jar
